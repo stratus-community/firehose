@@ -7,8 +7,8 @@ authors = [ { name = 'IS4S', email = 'pntos@is4s.com' } ]
 requires-python = '>=3.10'
 
 dependencies = [
-    # main branch, committed 9 April 2026
-    'aspn @ git+https://github.com/Open-PNT/ASPN-ICD.git@49473ac21ff300d861f7266a9ca38c4fd2b7265a',
+    # main branch, committed 6 May 2026
+    'aspn @ git+https://github.com/stratus-community/stratus-aspn-icd.git@66fa9ee8d2a60a0a7004d91765a1c8f1251b99c3',
     'black==26.3.1',
     'clang-format==14',
     # main branch, committed 2 May, 2022
