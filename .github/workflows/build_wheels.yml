@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-            repository: 'is4s/aspn-generated'
+            repository: 'stratus-community/stratus-aspn-generated'
             ref: ${{ github.head_ref || github.ref }}
 
       - name: Build sdist
@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-            repository: 'is4s/aspn-generated'
+            repository: 'stratus-community/stratus-aspn-generated'
             ref: ${{ github.head_ref || github.ref }}
 
       - name: Set up QEMU

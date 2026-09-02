@@ -474,7 +474,7 @@ def _generate_legacy_submodule(lcm_python_output: str) -> None:
     Clones a specific revision of the aspn-generated repository and uses it to create a submodule
     containing previous major release of LCM Python.
     """
-    git_url = 'https://github.com/is4s/aspn-generated.git'
+    git_url = 'https://github.com/stratus-community/stratus-aspn-generated.git'
     git_revision = '9d0eecc9a841e5fc3dd9a9abe601054d37e6bbba'
     dest_path = join(lcm_python_output, 'aspn23_lcm', 'legacy')
 
