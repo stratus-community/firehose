@@ -14,7 +14,9 @@ from firehose.backends.aspn.utils import (
 )
 
 # This URL is used simply as an identifier - it does not have to be where the file is located
-ID_URL = "https://github.com/stratus-community/stratus-aspn-generated/tree/main"
+ID_URL = (
+    "https://github.com/stratus-community/stratus-aspn-generated/tree/main"
+)
 SCHEMA_URL = "https://json-schema.org/draft/2020-12/schema"
 
 
