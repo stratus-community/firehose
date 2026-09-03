@@ -198,7 +198,7 @@ def get_aspn_icd_root() -> str:
 
 
 def main():
-    ASPN_ICD_DIRS = ["types", "metadata", "measurements"]
+    ASPN_ICD_DIRS = ["types", "metadata", "measurements", "events"]
 
     BACKENDS: dict[str, list[Backend]] = {
         'c': AspnCBackend,

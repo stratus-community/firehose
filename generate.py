@@ -248,6 +248,7 @@ def configure_extra_icds(
         "measurement_": "measurements",
         "metadata_": "metadata",
         "type_": "types",
+        "event_": "events"
     }
 
     # Create the temporary directory structure
@@ -465,6 +466,8 @@ def _generate_lcm_fingerprint_table(output_dir: str) -> None:
         _write_fingerprints(classes, 'metadata', file)
         file.write('\n## Types\n\n')
         _write_fingerprints(classes, 'type', file)
+        file.write('\n## Events\n\n')
+        _write_fingerprints(classes, 'event', file)
 
 
 def _generate_legacy_submodule(lcm_python_output: str) -> None:
@@ -775,7 +778,7 @@ def create_targets(args: argparse.Namespace) -> dict[str, FirehoseTarget]:
         FirehoseTarget(
             name="aspn_py",
             runner=ASPN_CODEGEN_RUNNER,
-            cmd_args=["-d", join(args.output_dir, "aspn-py"), "-o", "py"],
+            cmd_args=["-d", join(args.output_dir, "aspn-py"), "-o", "py", "--extra_icd_dirs", args.extra_icd_files_dir],
         ),
         FirehoseTarget(
             name="aspn_dds_cpp",
@@ -805,6 +808,8 @@ def create_targets(args: argparse.Namespace) -> dict[str, FirehoseTarget]:
                 ),
                 "-o",
                 "ros",
+                "--extra_icd_dirs", 
+                args.extra_icd_files_dir,
             ],
         ),
         FirehoseTarget(
@@ -821,6 +826,8 @@ def create_targets(args: argparse.Namespace) -> dict[str, FirehoseTarget]:
                 ),
                 "-o",
                 "ros_translations",
+                "--extra_icd_dirs", 
+                args.extra_icd_files_dir,
             ],
             dependencies=["aspn_ros"],
         ),
