@@ -162,14 +162,17 @@ class AspnYamlToCHeader(Backend):
 
         docstr = doc_string
         if nullable:
-            if '[' in field_name:
+            if isinstance(data_len, str):
                 docstr += (
-                    '\nThis array must contain all real numbers or all NaNs.'
+                    '\nNULL indicates this optional field is not provided.'
                 )
             else:
-                docstr += '\nUse NaN if there is no value.'
+                docstr += (
+                    '\nAn array of NaNs indicates this optional field is '
+                    'not provided.'
+                )
 
-        docstr = format_docstring(doc_string, indent=INDENT)
+        docstr = format_docstring(docstr, indent=INDENT)
         field_str = f"{f_type} {f_name}"
 
         if type_name.startswith(ASPN_PREFIX):
@@ -190,12 +193,6 @@ class AspnYamlToCHeader(Backend):
         doc_string: str,
         nullable: bool = False,
     ):
-        if nullable:
-            doc_string += (
-                '\nThis matrix must contain all real numbers or all NaNs.'
-            )
-        docstr = format_docstring(doc_string, indent=INDENT)
-
         try:
             x = int(x)
         except ValueError:
@@ -205,8 +202,21 @@ class AspnYamlToCHeader(Backend):
         except ValueError:
             pass
 
+        is_pointer = isinstance(x, str) and isinstance(y, str)
+        if nullable:
+            if is_pointer:
+                doc_string += (
+                    '\nNULL indicates this optional field is not provided.'
+                )
+            else:
+                doc_string += (
+                    '\nA matrix of NaNs indicates this optional field is '
+                    'not provided.'
+                )
+        docstr = format_docstring(doc_string, indent=INDENT)
+
         field_str = f"{type_name} {field_name}[{x}][{y}]"
-        if isinstance(x, str) and isinstance(y, str):
+        if is_pointer:
             if nullable:
                 self._set_nullability_macro()
                 field_str = f"{type_name}* {ASPN_NULLABLE_MACRO} {field_name}"
@@ -267,14 +277,9 @@ class AspnYamlToCHeader(Backend):
     ):
         docstr = doc_string
         if nullable:
-            if '[' in field_name:
-                docstr += (
-                    '\nThis array must contain all real numbers or all NaNs.'
-                )
-            else:
-                docstr += '\nUse NaN if there is no value.'
+            docstr += '\nNaN indicates this optional field is not provided.'
 
-        docstr = format_docstring(doc_string, indent=INDENT)
+        docstr = format_docstring(docstr, indent=INDENT)
         field_str = f"{field_type_name} {field_name}"
 
         if field_type_name.startswith(f"{ASPN_PREFIX}Type"):

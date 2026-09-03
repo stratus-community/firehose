@@ -587,14 +587,12 @@ class AspnYamlToCppHeader(Backend):
 
         docstr = doc_string
         if nullable:
-            if '[' in field_name:
-                docstr += (
-                    '\nThis array must contain all real numbers or all NaNs.'
-                )
-            else:
-                docstr += '\nUse NaN if there is no value.'
+            docstr += (
+                '\nAn array of NaNs indicates this optional field is '
+                'not provided.'
+            )
 
-        docstr = format_docstring(doc_string, indent=INDENT)
+        docstr = format_docstring(docstr, indent=INDENT)
         field_str = f"{f_type} {f_name}"
 
         if type_name.startswith(ASPN_PREFIX):
@@ -620,7 +618,8 @@ class AspnYamlToCppHeader(Backend):
     ):
         if nullable:
             doc_string += (
-                '\nThis matrix must contain all real numbers or all NaNs.'
+                '\nA matrix of NaNs indicates this optional field is '
+                'not provided.'
             )
         docstr = format_docstring(doc_string, indent=INDENT)
 
@@ -694,14 +693,9 @@ class AspnYamlToCppHeader(Backend):
     ):
         docstr = doc_string
         if nullable:
-            if '[' in field_name:
-                docstr += (
-                    '\nThis array must contain all real numbers or all NaNs.'
-                )
-            else:
-                docstr += '\nUse NaN if there is no value.'
+            docstr += '\nNaN indicates this optional field is not provided.'
 
-        docstr = format_docstring(doc_string, indent=INDENT)
+        docstr = format_docstring(docstr, indent=INDENT)
 
         if is_length_field(field_name):
             # Generate getters for length fields, but skip using them in constructors and don't

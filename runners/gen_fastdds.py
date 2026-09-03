@@ -226,7 +226,9 @@ def get_cpp_files(cpp_dir: str) -> Tuple[List[str], List[str]]:
     meson_dir = join(cpp_dir, pardir)
     cxx_files = []
     hxx_files = []
-    for f in glob(join(cpp_dir, "*")):
+    for f in sorted(
+        glob(join(cpp_dir, "*")), key=str.casefold
+    ):  # sort for output consistency
         if f.endswith(".c") or f.endswith(".cpp") or f.endswith(".cxx"):
             cxx_files.append(relpath(f, meson_dir))
         elif f.endswith(".h") or f.endswith(".hpp") or f.endswith(".hxx"):

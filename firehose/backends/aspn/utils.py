@@ -147,7 +147,10 @@ CODEGEN_MAPPINGS = {
         lambda x: snake_to_pascal(x),
     ),
     'AspnYamlToDDS': (ASPN_TO_DDS_MAPPINGS, lambda x: snake_to_pascal(x)),
-    'AspnPyBackend': (ASPN_TO_PYTHON_MAPPINGS, lambda x: snake_to_pascal(x)),
+    'AspnYamlToPython': (
+        ASPN_TO_PYTHON_MAPPINGS,
+        lambda x: snake_to_pascal(x),
+    ),
     'AspnJsonBackend': (ASPN_TO_JSON_MAPPINGS, lambda x: x),
 }
 
@@ -226,7 +229,7 @@ def name_to_enum_field(
     if codegen_instance.__class__.__name__ in ['AspnYamlToLCM']:
         return f'{enum_name}_{enum_field}'.upper()
     elif codegen_instance.__class__.__name__ in [
-        'AspnPyBackend',
+        'AspnYamlToPython',
         'AspnJsonBackend',
     ]:
         return enum_field.upper()
@@ -261,7 +264,7 @@ def name_to_enum_value(codegen_instance, enum_name: str) -> str:
         if hasattr(codegen_instance, 'current_struct'):
             struct_name = codegen_instance.current_struct.struct_name
         add_aspn_prefix = codegen_instance.__class__.__name__ not in [
-            'AspnPyBackend'
+            'AspnYamlToPython'
         ]
         pascal_struct_name = name_to_struct(
             codegen_instance.struct_name, add_aspn_prefix

@@ -129,6 +129,7 @@ class AspnYamlToLCMTranslations(Backend):
             dedent("""\
                 from typing import TypeAlias, Union, Callable
                 import numpy as np
+                import math
 
                 {imports}
 
@@ -190,23 +191,47 @@ class AspnYamlToLCMTranslations(Backend):
     ):
         raise NotImplementedError
 
-    def process_data_pointer_field(
+    def _process_array(
         self,
         field_name: str,
         type_name: str,
-        data_len: Union[str, int],
-        doc_string: str,
-        deref="",
-        nullable=None,
+        nullable: bool | None,
+        dim1_len: int | str,
+        dim2_len: int | str | None = None,
     ):
+        """Process 1d or 2d array field."""
         if self.current_struct is None:
             return
+
+        # In lcm, add length fields missing from aspn-py if not already set
+        if (
+            self.current_struct.to_lcm
+            and isinstance(dim1_len, str)
+            and not any(
+                assign.startswith(dim1_len)
+                for assign in self.current_struct.assignments
+            )
+        ):
+            qualifier = ""
+            if nullable:
+                qualifier = f" if old.{field_name} is not None else 0"
+            self.current_struct.assignments.append(
+                f"{dim1_len} = len(old.{field_name})" + qualifier
+            )
 
         if self.current_struct.to_lcm:
             qualifier = ""
             if nullable:
-                qualifier = f" if old.{field_name} is not None else []"
-            if isinstance(data_len, int) or type_name in PRIMITIVES:
+                data_len = (
+                    str(dim1_len)
+                    if isinstance(dim1_len, int)
+                    else f"msg.{dim1_len}"
+                )
+                nans = f"[math.nan] * {data_len}"
+                if dim2_len:
+                    nans = f"[{nans}] * {data_len}"
+                qualifier = f" if old.{field_name} is not None else {nans}"
+            if isinstance(dim1_len, int) or type_name in PRIMITIVES:
                 self.current_struct.assignments.append(
                     f"{field_name} = old.{field_name}.tolist()" + qualifier
                 )
@@ -216,9 +241,14 @@ class AspnYamlToLCMTranslations(Backend):
                     f"for x in old.{field_name}]" + qualifier
                 )
         else:
-            if isinstance(data_len, int) or type_name in PRIMITIVES:
+            if isinstance(dim1_len, int) or type_name in PRIMITIVES:
+                qualifier = ""
+                if nullable:
+                    qualifier += (
+                        f"if not np.isnan(old.{field_name}).any() else None"
+                    )
                 self.current_struct.assignments.append(
-                    f"{field_name} = np.array(old.{field_name})"
+                    f"{field_name} = np.array(old.{field_name})" + qualifier
                 )
             else:
                 self.current_struct.assignments.append(
@@ -226,22 +256,16 @@ class AspnYamlToLCMTranslations(Backend):
                     f"for x in old.{field_name}]"
                 )
 
-        # In lcm, add length fields missing from aspn-py
-        if self.current_struct.to_lcm and isinstance(data_len, str):
-            # Skip redundant assignments (caused by multiple arrays with the
-            # same variable length)
-            if any(
-                assign.startswith(data_len)
-                for assign in self.current_struct.assignments
-            ):
-                return
-
-            qualifier = ""
-            if nullable:
-                qualifier = f" if old.{field_name} is not None else 0"
-            self.current_struct.assignments.append(
-                f"{data_len} = len(old.{field_name})" + qualifier
-            )
+    def process_data_pointer_field(
+        self,
+        field_name: str,
+        type_name: str,
+        data_len: Union[str, int],
+        doc_string: str,
+        deref="",
+        nullable=None,
+    ):
+        self._process_array(field_name, type_name, nullable, data_len)
 
     def process_matrix_field(
         self,
@@ -254,11 +278,8 @@ class AspnYamlToLCMTranslations(Backend):
     ):
         if x != y:
             raise NotImplementedError
-        # The desired marshaling functions happens to be the same as those for
-        # a 1D array, so we can just call that generation function
-        self.process_data_pointer_field(
-            field_name, type_name, x, doc_string, nullable=nullable
-        )
+
+        self._process_array(field_name, type_name, nullable, x, y)
 
     def process_outer_managed_pointer_field(
         self,

@@ -142,7 +142,7 @@ class AspnYamlToDDS(Backend):
         nullable=None,
     ):
         self.process_data_pointer_field(
-            field_name, type_name, "", doc_string, nullable
+            field_name, type_name, "", doc_string, nullable=nullable
         )
 
     def process_outer_managed_pointer_field(

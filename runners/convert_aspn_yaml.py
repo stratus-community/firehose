@@ -10,7 +10,7 @@ from firehose.backends import (
     AspnCBackend,
     AspnCppBackend,
     AspnJsonBackend,
-    AspnPyBackend,
+    AspnYamlToPython,
     AspnCMarshalingBackend,
     AspnYamlToDDS,
     AspnYamlToLCM,
@@ -209,7 +209,7 @@ def main():
         'ros': AspnYamlToROS,
         'ros_translations': AspnYamlToROSTranslations,
         'json': AspnJsonBackend,
-        'py': AspnPyBackend,
+        'py': AspnYamlToPython,
         'xmi': AspnYamlToXMI,
         'marshal_lcm_c': AspnCMarshalingBackend,
     }

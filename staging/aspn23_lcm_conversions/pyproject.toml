@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name="aspn23_lcm_conversions"
-version="1.0.0"
+version="1.0.1"
 description="A set of functions to convert between ASPN-Python and ASPN-LCM"
 dependencies=[
     "aspn23>=1.0.0, <2.0.0",

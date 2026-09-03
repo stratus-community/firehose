@@ -1,6 +1,7 @@
 from glob import glob
 from os import makedirs, remove
 from os.path import join
+from shutil import rmtree
 from typing import List, Union
 import re
 
@@ -69,28 +70,26 @@ class {self.struct_name}{inherit}:
 class AspnYamlToPython(Backend):
     current_struct: Struct | None = None
     structs: List[Struct] = []
-    output_folder = None
 
     def _remove_existing_output_files(self):
-        if self.output_folder is not None:
-            for file in glob(f"{self.output_folder}/*.py"):
-                remove(file)
+        rmtree(self.output_folder, ignore_errors=True)
 
     def set_output_root_folder(self, output_root_folder: str):
-        self.output_folder = output_root_folder
-        makedirs(self.output_folder, exist_ok=True)
+        self.output_folder = join(output_root_folder, 'src', ASPN_PREFIX_LOWER)
         self._remove_existing_output_files()
+        makedirs(self.output_folder, exist_ok=True)
 
-    def begin_struct(self, snake_case_struct_name):
+    def begin_struct(self, struct_name: str):
+        self.struct_name = struct_name
         if self.current_struct is not None:
             self.structs += [self.current_struct]
-        self.current_struct = Struct(
-            f"{snake_to_pascal(snake_case_struct_name)}"
-        )
+        self.current_struct = Struct(f"{snake_to_pascal(struct_name)}")
 
     def _add_attribute_docstring(
         self, field_name, typehint, docstring, limit=100, nullable=False
     ):
+        if self.current_struct is None:
+            return
         type = typehint if not nullable else f"Optional[{typehint}]"
         lines = [f"\n{INDENT}{field_name} - {type}:"]
         current_line = f"{INDENT}"
@@ -127,7 +126,8 @@ class AspnBase(Protocol):
         )
 
     def generate(self):
-        self.structs += [self.current_struct]
+        if self.current_struct is not None:
+            self.structs += [self.current_struct]
 
         output_init_filename = join(self.output_folder, "__init__.py")
 
@@ -184,7 +184,12 @@ class AspnBase(Protocol):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def process_func_ptr_field_with_self(
-        self, field_name: str, params, return_t, doc_string: str, nullable=None
+        self,
+        field_name: str,
+        params,
+        return_t,
+        doc_string: str,
+        nullable: bool = False,
     ):
         raise NotImplementedError
 
@@ -195,7 +200,7 @@ class AspnBase(Protocol):
         data_len: Union[str, int],
         doc_string: str,
         deref="",
-        nullable=None,
+        nullable: bool = False,
     ):
         if self.current_struct is None:
             return
@@ -225,8 +230,10 @@ class AspnBase(Protocol):
         x: int | str,
         y: int | str,
         doc_string: str,
-        nullable=None,
+        nullable: bool = False,
     ):
+        if self.current_struct is None:
+            return
         typehint = f"NDArray[np.{np.dtype(type_name).type.__name__}]"
         if nullable:
             typehint = f"Optional[{typehint}]"
@@ -253,19 +260,19 @@ class AspnBase(Protocol):
         data_len: Union[str, int],
         doc_string: str,
         deref="",
-        nullable=None,
+        nullable: bool = False,
     ):
         raise NotImplementedError
 
     def process_string_field(
-        self, field_name: str, doc_string: str, nullable=None
+        self, field_name: str, doc_string: str, nullable: bool = False
     ):
         self.process_simple_field(
             field_name, "str", doc_string, nullable=nullable
         )
 
     def process_string_array_field(
-        self, field_name: str, doc_string: str, nullable=None
+        self, field_name: str, doc_string: str, nullable: bool = False
     ):
         raise NotImplementedError
 
@@ -274,7 +281,7 @@ class AspnBase(Protocol):
         field_name: str,
         field_type_name: str,
         doc_string: str,
-        nullable=None,
+        nullable: bool = False,
     ):
         if self.current_struct is None:
             return
@@ -297,7 +304,7 @@ class AspnBase(Protocol):
         )
         self.current_struct.class_fields_buf.append(f"{INDENT}{field_str}")
 
-    def process_class_docstring(self, doc_string: str, nullable=None):
+    def process_class_docstring(self, doc_string: str, nullable: bool = False):
         if self.current_struct is None:
             return
         self.current_struct.class_docstring = char_limit_docstr(
@@ -309,7 +316,7 @@ class AspnBase(Protocol):
         field_name: str,
         field_type_name: str,
         doc_string: str,
-        nullable=None,
+        nullable: bool = False,
     ):
         raise NotImplementedError
 
