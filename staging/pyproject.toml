@@ -15,7 +15,7 @@ install = ['--tags=runtime,python-runtime,devel', '--skip-subprojects']
 [project]
 dependencies = ['numpy']
 name = 'aspn23_xtensor'
-version = '1.0.0'
+version = '1.0.1'
 description = 'ASPN-C++ (xtensor) Python Bindings'
 license = 'Apache-2.0'
 license-files = ['LICENSE']
@@ -32,3 +32,7 @@ before-all = """
   update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 &&
   update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 60
 """
+
+[tool.cibuildwheel.windows]
+before-build = "pip install pkgconf"
+config-settings = { setup-args = ["--vsenv"] }

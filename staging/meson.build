@@ -3,6 +3,12 @@ project('aspn-generated',
     version : '23',
     default_options: ['cpp_std=c++20', 'c_std=c99', 'warning_level=3'])
 
+if (host_machine.system() == 'windows')
+    if meson.get_compiler('cpp').get_argument_syntax() == 'msvc'
+        add_project_arguments(['/bigobj', '/Zc:preprocessor', '-D_USE_MATH_DEFINES', '-DNOMINMAX'], language : 'cpp')
+    endif
+endif
+
 if not get_option('aspn-c').disabled()
     subdir('aspn-c')
 else
